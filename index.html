@@ -1,1 +1,730 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jaell Community — Discord Bot</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --border: #1e1e2e;
+    --accent: #7c6af7;
+    --accent2: #f97bae;
+    --accent3: #6af7c8;
+    --text: #e8e8f0;
+    --muted: #6b6b80;
+    --card: #13131c;
+  }
 
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* NOISE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  /* GLOW ORBS */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .orb1 { width: 600px; height: 600px; background: rgba(124,106,247,0.12); top: -200px; left: -200px; }
+  .orb2 { width: 400px; height: 400px; background: rgba(249,123,174,0.08); bottom: 100px; right: -100px; }
+  .orb3 { width: 300px; height: 300px; background: rgba(106,247,200,0.06); top: 50%; left: 50%; }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 20px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    background: rgba(10,10,15,0.8);
+    backdrop-filter: blur(20px);
+  }
+
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 800;
+    font-size: 20px;
+    letter-spacing: -0.5px;
+  }
+
+  .nav-logo .dot {
+    width: 10px; height: 10px;
+    background: var(--accent3);
+    border-radius: 50%;
+    box-shadow: 0 0 12px var(--accent3);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.8); }
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--text); }
+
+  .nav-cta {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+
+  .nav-cta:hover {
+    background: #9080ff;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(124,106,247,0.4);
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 120px 24px 80px;
+    position: relative;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(124,106,247,0.1);
+    border: 1px solid rgba(124,106,247,0.3);
+    padding: 6px 16px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    animation: fadeUp 0.6s ease forwards;
+  }
+
+  .hero h1 {
+    font-size: clamp(56px, 10vw, 120px);
+    font-weight: 800;
+    line-height: 0.9;
+    letter-spacing: -4px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+
+  .hero h1 .gradient {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 50%, var(--accent3) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero p {
+    font-size: 18px;
+    color: var(--muted);
+    max-width: 520px;
+    margin: 0 auto 48px;
+    line-height: 1.6;
+    font-weight: 400;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+
+  .hero-buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+    padding: 14px 32px;
+    border-radius: 10px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    text-decoration: none;
+    transition: all 0.2s;
+    box-shadow: 0 4px 24px rgba(124,106,247,0.3);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(124,106,247,0.5);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text);
+    padding: 14px 32px;
+    border-radius: 10px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    text-decoration: none;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-2px);
+  }
+
+  /* STATS */
+  .stats {
+    display: flex;
+    justify-content: center;
+    gap: 64px;
+    padding: 40px 24px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    animation: fadeUp 0.6s 0.4s ease both;
+    flex-wrap: wrap;
+  }
+
+  .stat { text-align: center; }
+  .stat-number {
+    font-size: 36px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -1px;
+  }
+  .stat-label {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* SECTION */
+  section {
+    padding: 100px 24px;
+    max-width: 1100px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .section-title {
+    font-size: clamp(32px, 5vw, 52px);
+    font-weight: 800;
+    letter-spacing: -2px;
+    line-height: 1.05;
+    margin-bottom: 16px;
+  }
+
+  .section-sub {
+    color: var(--muted);
+    font-size: 16px;
+    max-width: 480px;
+    line-height: 1.6;
+    margin-bottom: 64px;
+    font-weight: 400;
+  }
+
+  /* FEATURE GRID */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+  }
+
+  .feature-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(124,106,247,0.05), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .feature-card:hover {
+    border-color: rgba(124,106,247,0.4);
+    transform: translateY(-4px);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+  }
+
+  .feature-card:hover::before { opacity: 1; }
+
+  .feature-icon {
+    font-size: 28px;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .feature-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: -0.3px;
+  }
+
+  .feature-desc {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.6;
+    font-weight: 400;
+  }
+
+  /* COMMANDS */
+  .commands-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+  }
+
+  .cmd-group {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    transition: border-color 0.2s;
+  }
+
+  .cmd-group:hover { border-color: rgba(124,106,247,0.3); }
+
+  .cmd-group-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    font-family: 'DM Mono', monospace;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .cmd-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .cmd-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .cmd-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--accent3);
+    background: rgba(106,247,200,0.08);
+    padding: 3px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+
+  .cmd-desc {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 400;
+  }
+
+  /* HIGHLIGHT BAND */
+  .highlight-band {
+    background: linear-gradient(135deg, rgba(124,106,247,0.08), rgba(249,123,174,0.05));
+    border: 1px solid rgba(124,106,247,0.15);
+    border-radius: 20px;
+    padding: 64px 48px;
+    text-align: center;
+    margin: 0 24px;
+    max-width: 900px;
+    margin: 0 auto 100px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .highlight-band::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    height: 200px;
+    background: radial-gradient(ellipse, rgba(124,106,247,0.2), transparent);
+    pointer-events: none;
+  }
+
+  .highlight-band h2 {
+    font-size: clamp(28px, 4vw, 44px);
+    font-weight: 800;
+    letter-spacing: -2px;
+    margin-bottom: 16px;
+  }
+
+  .highlight-band p {
+    color: var(--muted);
+    font-size: 16px;
+    margin-bottom: 32px;
+    font-weight: 400;
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: gap;
+  }
+
+  .footer-logo {
+    font-weight: 800;
+    font-size: 18px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .footer-text {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 400;
+  }
+
+  /* SCROLL REVEAL */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.7s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* MOBILE */
+  @media (max-width: 768px) {
+    nav { padding: 16px 24px; }
+    .nav-links { display: none; }
+    .stats { gap: 32px; }
+    footer { flex-direction: column; gap: 16px; text-align: center; }
+    .highlight-band { padding: 40px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="dot"></div>
+    Jaell Community
+  </div>
+  <ul class="nav-links">
+    <li><a href="#funcionalidades">Funções</a></li>
+    <li><a href="#comandos">Comandos</a></li>
+    <li><a href="#adicionar">Adicionar</a></li>
+  </ul>
+  <a href="#adicionar" class="nav-cta">Adicionar ao servidor</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div>
+    <div class="hero-badge">
+      <span>⚡</span> Bot para Discord
+    </div>
+    <h1>
+      O bot que seu<br>
+      servidor <span class="gradient">merecia.</span>
+    </h1>
+    <p>Jaell Community é um bot completo para Discord com moderação, tickets, aniversários, banco de dados de membros e muito mais.</p>
+    <div class="hero-buttons">
+      <a href="#adicionar" class="btn-primary">➕ Adicionar ao servidor</a>
+      <a href="#comandos" class="btn-secondary">Ver comandos</a>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats reveal">
+  <div class="stat">
+    <div class="stat-number">30+</div>
+    <div class="stat-label">Comandos</div>
+  </div>
+  <div class="stat">
+    <div class="stat-number">7</div>
+    <div class="stat-label">Sistemas</div>
+  </div>
+  <div class="stat">
+    <div class="stat-number">24/7</div>
+    <div class="stat-label">Online</div>
+  </div>
+  <div class="stat">
+    <div class="stat-number">100%</div>
+    <div class="stat-label">Gratuito</div>
+  </div>
+</div>
+
+<!-- FUNCIONALIDADES -->
+<section id="funcionalidades">
+  <div class="reveal">
+    <div class="section-label">// funcionalidades</div>
+    <h2 class="section-title">Tudo que você<br>precisa em um bot.</h2>
+    <p class="section-sub">Do básico ao avançado, Jaell Community cobre todas as necessidades do seu servidor.</p>
+  </div>
+
+  <div class="features-grid reveal">
+    <div class="feature-card">
+      <span class="feature-icon">🎫</span>
+      <div class="feature-title">Sistema de Tickets</div>
+      <div class="feature-desc">Verificação de membros com formulário rápido ou perguntas no chat. Staff aprova ou rejeita com um clique.</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">🎂</span>
+      <div class="feature-title">Aniversários</div>
+      <div class="feature-desc">Registre e celebre aniversários automaticamente. Mensagem com TTS no dia especial.</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">🗃️</span>
+      <div class="feature-title">Banco de Dados</div>
+      <div class="feature-desc">Fichas completas dos membros verificados. Consulte, edite e registre informações a qualquer momento.</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">🔨</span>
+      <div class="feature-title">Moderação</div>
+      <div class="feature-desc">Ban, kick, timeout, limpeza de mensagens e gerenciamento de cargos e nicknames.</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">🚫</span>
+      <div class="feature-title">Censura</div>
+      <div class="feature-desc">Filtragem automática de palavras proibidas com log no canal de staff. Lista editável em tempo real.</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">📣</span>
+      <div class="feature-title">Avisos e Menções</div>
+      <div class="feature-desc">Mencione @everyone ou cargos específicos com embeds bonitos direto pelo comando.</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">👋</span>
+      <div class="feature-title">Boas-vindas</div>
+      <div class="feature-desc">Mensagens automáticas de entrada e saída de membros com embed personalizado.</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">🚀</span>
+      <div class="feature-title">Boost</div>
+      <div class="feature-desc">Celebre automaticamente quando alguém impulsionar o servidor com uma mensagem especial.</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">🎉</span>
+      <div class="feature-title">Diversão</div>
+      <div class="feature-desc">Sorteios, enquetes, dado, e muito mais para animar o servidor.</div>
+    </div>
+  </div>
+</section>
+
+<!-- COMANDOS -->
+<section id="comandos">
+  <div class="reveal">
+    <div class="section-label">// comandos</div>
+    <h2 class="section-title">Lista completa<br>de comandos.</h2>
+    <p class="section-sub">Prefixo padrão: <span style="font-family:'DM Mono',monospace;color:var(--accent3)">!</span></p>
+  </div>
+
+  <div class="commands-grid reveal">
+    <div class="cmd-group">
+      <div class="cmd-group-title">👋 Básicos</div>
+      <div class="cmd-list">
+        <div class="cmd-item"><span class="cmd-name">!oi</span><span class="cmd-desc">Diz olá</span></div>
+        <div class="cmd-item"><span class="cmd-name">!ping</span><span class="cmd-desc">Verifica latência</span></div>
+        <div class="cmd-item"><span class="cmd-name">!ajuda</span><span class="cmd-desc">Lista todos os comandos</span></div>
+      </div>
+    </div>
+
+    <div class="cmd-group">
+      <div class="cmd-group-title">🔨 Moderação</div>
+      <div class="cmd-list">
+        <div class="cmd-item"><span class="cmd-name">!banir</span><span class="cmd-desc">Bane um membro</span></div>
+        <div class="cmd-item"><span class="cmd-name">!expulsar</span><span class="cmd-desc">Expulsa um membro</span></div>
+        <div class="cmd-item"><span class="cmd-name">!silenciar</span><span class="cmd-desc">Timeout de 10min</span></div>
+        <div class="cmd-item"><span class="cmd-name">!dessilenciar</span><span class="cmd-desc">Remove timeout</span></div>
+        <div class="cmd-item"><span class="cmd-name">!limpar</span><span class="cmd-desc">Apaga mensagens</span></div>
+        <div class="cmd-item"><span class="cmd-name">!nick</span><span class="cmd-desc">Altera nickname</span></div>
+      </div>
+    </div>
+
+    <div class="cmd-group">
+      <div class="cmd-group-title">🎫 Tickets</div>
+      <div class="cmd-list">
+        <div class="cmd-item"><span class="cmd-name">!setup_verificacao</span><span class="cmd-desc">Cria painel de verificação</span></div>
+        <div class="cmd-item"><span class="cmd-name">!fecharticket</span><span class="cmd-desc">Fecha ticket manualmente</span></div>
+      </div>
+    </div>
+
+    <div class="cmd-group">
+      <div class="cmd-group-title">🎂 Aniversários</div>
+      <div class="cmd-list">
+        <div class="cmd-item"><span class="cmd-name">!meuniver</span><span class="cmd-desc">Registra seu aniversário</span></div>
+        <div class="cmd-item"><span class="cmd-name">!meuaniver</span><span class="cmd-desc">Consulta seu aniversário</span></div>
+        <div class="cmd-item"><span class="cmd-name">!proxaniver</span><span class="cmd-desc">Próximos aniversários</span></div>
+        <div class="cmd-item"><span class="cmd-name">!setaniver</span><span class="cmd-desc">Define aniversário (staff)</span></div>
+        <div class="cmd-item"><span class="cmd-name">!removeaniver</span><span class="cmd-desc">Remove aniversário (staff)</span></div>
+      </div>
+    </div>
+
+    <div class="cmd-group">
+      <div class="cmd-group-title">🗃️ Banco de Dados</div>
+      <div class="cmd-list">
+        <div class="cmd-item"><span class="cmd-name">!ficha</span><span class="cmd-desc">Consulta ficha de membro</span></div>
+        <div class="cmd-item"><span class="cmd-name">!editarficha</span><span class="cmd-desc">Edita ficha (staff)</span></div>
+        <div class="cmd-item"><span class="cmd-name">!registrarficha</span><span class="cmd-desc">Registra ficha manualmente</span></div>
+      </div>
+    </div>
+
+    <div class="cmd-group">
+      <div class="cmd-group-title">📣 Menções</div>
+      <div class="cmd-list">
+        <div class="cmd-item"><span class="cmd-name">!marcarTodos</span><span class="cmd-desc">Menciona @everyone</span></div>
+        <div class="cmd-item"><span class="cmd-name">!marcarCargo</span><span class="cmd-desc">Menciona um cargo</span></div>
+        <div class="cmd-item"><span class="cmd-name">!avisar</span><span class="cmd-desc">Aviso importante</span></div>
+      </div>
+    </div>
+
+    <div class="cmd-group">
+      <div class="cmd-group-title">🎉 Diversão</div>
+      <div class="cmd-list">
+        <div class="cmd-item"><span class="cmd-name">!sortear</span><span class="cmd-desc">Faz um sorteio</span></div>
+        <div class="cmd-item"><span class="cmd-name">!enquete</span><span class="cmd-desc">Cria uma enquete</span></div>
+        <div class="cmd-item"><span class="cmd-name">!dado</span><span class="cmd-desc">Rola um dado</span></div>
+        <div class="cmd-item"><span class="cmd-name">!parabenizar</span><span class="cmd-desc">Parabeniza membro</span></div>
+      </div>
+    </div>
+
+    <div class="cmd-group">
+      <div class="cmd-group-title">ℹ️ Informações</div>
+      <div class="cmd-list">
+        <div class="cmd-item"><span class="cmd-name">!userinfo</span><span class="cmd-desc">Info de um membro</span></div>
+        <div class="cmd-item"><span class="cmd-name">!serverinfo</span><span class="cmd-desc">Info do servidor</span></div>
+        <div class="cmd-item"><span class="cmd-name">!aniversario</span><span class="cmd-desc">Aniversário do servidor</span></div>
+      </div>
+    </div>
+
+    <div class="cmd-group">
+      <div class="cmd-group-title">🚫 Censura</div>
+      <div class="cmd-list">
+        <div class="cmd-item"><span class="cmd-name">!addpalavra</span><span class="cmd-desc">Adiciona palavra proibida</span></div>
+        <div class="cmd-item"><span class="cmd-name">!removepalavra</span><span class="cmd-desc">Remove palavra proibida</span></div>
+        <div class="cmd-item"><span class="cmd-name">!listarpalavras</span><span class="cmd-desc">Lista palavras proibidas</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="highlight-band reveal" id="adicionar">
+  <h2>Pronto para adicionar<br><span style="background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Jaell Community ao seu servidor?</span></h2>
+  <p>Gratuito, fácil de configurar e sempre online.</p>
+  <a href="#" class="btn-primary">➕ Adicionar ao servidor</a>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Jaell Community</div>
+  <div class="footer-text">Feito com 💜 para a comunidade Discord</div>
+</footer>
+
+<script>
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
